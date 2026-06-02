@@ -11,13 +11,17 @@ import { listCompleted } from '../controllers/activityControllers/listCompletedA
 import { complete } from '../controllers/activityControllers/completeActivityController.js';
 import { open } from '../controllers/activityControllers/openActivityController.js'
 import { archived } from '../controllers/activityControllers/archivedActivityController.js';
-
+import { listArchived } from '../controllers/activityControllers/listArchivedActivityController.js';
+import { listDeleted } from '../controllers/activityControllers/listDeletedActivityController.js';
 export class ActivityRoutes {
   constructor(router) {
     //router.post('/', checkAuthorizationMiddleware, activityBodyValidator, add);
 
     router.get('/completed', checkAuthorizationMiddleware, listCompleted);
+    router.get('/archived', checkAuthorizationMiddleware, listArchived);
+    router.get('/deleted', checkAuthorizationMiddleware, listDeleted);
     router.get('/', checkAuthorizationMiddleware, listOpen);
+    
 
     router.get('/:id', checkAuthorizationMiddleware, activityIdParamValidator, get);
    
