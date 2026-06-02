@@ -1,0 +1,64 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - todolist_frontEnd
+  pull_request:
+    branches:
+      - todolist_frontEnd
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run tests
+        run: npm test
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Setup SSH
+        run: |
+          mkdir -p ~/.ssh
+          printf "%s\n" "${{ secrets.AWS_SSH_KEY }}" > ~/.ssh/deploy_key.pem
+          chmod 600 ~/.ssh/deploy_key.pem
+          ssh-keyscan -H ${{ secrets.AWS_HOST }} >> ~/.ssh/known_hosts
+
+      - name: Deploy to production
+        run: |
+          ssh -i ~/.ssh/deploy_key.pem ubuntu@${{ secrets.AWS_HOST }} <<EOF
+            set -e
+
+            # Esporta tutte le variabili d'ambiente
+            export MONGODB_URI="${{ secrets.MONGODB_URI }}"
+            export MAIL_USER="${{ secrets.MAIL_USER }}"
+            export MAIL_PASSWORD="${{ secrets.MAIL_PASSWORD }}"
+
+            # Vai nella cartella del progetto
+            cd /home/ubuntu/todolist_frontEnd/
+
+            # Aggiorna il codice
+            git checkout todolist_frontEnd
+            git pull
+            npm install
+
+            # Primo deploy: avvia se non esiste
+            pm2 describe todolist || pm2 start ecosystem.config.cjs --env production
+
+            # Reload/apply changes per deploy successivi
+            pm2 reload ecosystem.config.cjs --env production
+          EOF

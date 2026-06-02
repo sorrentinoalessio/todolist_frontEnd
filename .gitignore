@@ -1,0 +1,6 @@
+node_modules/
+logs/
+aws_ip.txt
+src/constants/mailConfig.js
+.env
+coverage/
