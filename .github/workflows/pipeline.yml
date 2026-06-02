@@ -3,10 +3,10 @@ name: CI/CD Pipeline
 on:
   push:
     branches:
-      - todolist_frontEnd
+      - main
   pull_request:
     branches:
-      - todolist_frontEnd
+      - main
 
 jobs:
   build:
@@ -52,7 +52,7 @@ jobs:
             cd /home/ubuntu/todolist_frontEnd/
 
             # Aggiorna il codice
-            git checkout todolist_frontEnd
+            git checkout main
             git pull
             npm install
 
